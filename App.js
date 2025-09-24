@@ -1,20 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+/**
+ * App.js - Main Application Entry Point
+ * 
+ * This is the root component of the Project Pro application.
+ * It handles:
+ * - Firebase authentication state management
+ * - Conditional rendering between AuthScreen and MainApp
+ * - Loading states during authentication checks
+ * - User session persistence
+ */
+
+import React from 'react';
+import AppNavigator from './AppNavigator';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  return <AppNavigator />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

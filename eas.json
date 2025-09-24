@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "version": ">= 5.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk",
+        "image": "latest",
+        "resourceClass": "large"
+      },
+      "distribution": "internal"
+    }
+  }
+}
