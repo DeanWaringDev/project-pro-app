@@ -10,7 +10,8 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import SidebarMenu from './src/components/SidebarMenu';
 import { auth } from './src/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Text } from 'react-native';
+import { storeAuthState, clearAuthState, getStoredAuthState } from './src/utils/authStorage';
 
 const Stack = createNativeStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -19,13 +20,74 @@ export default function AppNavigator() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [showSidebar, setShowSidebar] = React.useState(false);
+  const [user, setUser] = React.useState(null);
 
+  // Enhanced authentication state management with persistence
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-      setIsLoading(false);
-    });
-    return unsubscribe;
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Check if user was previously authenticated
+        const storedAuth = await getStoredAuthState();
+        
+        if (storedAuth.isAuthenticated && storedAuth.userPreferences && isMounted) {
+          console.log('Found stored authentication for user:', storedAuth.userPreferences.email);
+          // Temporarily set user as authenticated based on stored data
+          setIsAuthenticated(true);
+          setUser({
+            uid: storedAuth.userId,
+            email: storedAuth.userPreferences.email,
+            displayName: storedAuth.userPreferences.displayName,
+            photoURL: storedAuth.userPreferences.photoURL
+          });
+          console.log('Restored user from storage, waiting for Firebase confirmation...');
+        }
+
+        // Set up Firebase auth state listener
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          if (!isMounted) return;
+
+          if (user) {
+            // User is confirmed by Firebase - update with fresh data
+            console.log('Firebase confirmed authentication for:', user.email);
+            setUser(user);
+            setIsAuthenticated(true);
+            // Update stored auth state with fresh data
+            await storeAuthState(user, 'email');
+          } else {
+            // No Firebase user - check if we had stored data
+            const currentStoredAuth = await getStoredAuthState();
+            if (currentStoredAuth.isAuthenticated) {
+              console.log('Firebase session expired, but user was stored. Clearing stored state.');
+              await clearAuthState();
+            }
+            // Clear authentication state
+            setUser(null);
+            setIsAuthenticated(false);
+            console.log('User signed out or session expired');
+          }
+          setIsLoading(false);
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (isMounted) {
+          setIsLoading(false);
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    const unsubscribePromise = initializeAuth();
+
+    return () => {
+      isMounted = false;
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) unsubscribe();
+      });
+    };
   }, []);
 
   // Sidebar navigation handler
@@ -53,8 +115,20 @@ export default function AppNavigator() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor: '#0f172a' 
+      }}>
         <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={{ 
+          color: '#94a3b8', 
+          marginTop: 16, 
+          fontSize: 16 
+        }}>
+          Checking authentication...
+        </Text>
       </View>
     );
   }
@@ -106,10 +180,14 @@ export default function AppNavigator() {
         <SidebarMenu
           visible={showSidebar}
           onClose={() => setShowSidebar(false)}
+          currentTheme="dark"
+          user={user}
+          onThemeToggle={() => {
+            console.log('Theme toggle pressed');
+          }}
           onNavigate={screen => {
             setShowSidebar(false);
             if (navigationRef.isReady()) {
-              // Map sidebar keys to stack screen names
               let target = screen;
               if (screen === 'home') target = 'Projects';
               navigationRef.navigate(target);

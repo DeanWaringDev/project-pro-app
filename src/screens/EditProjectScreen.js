@@ -47,6 +47,7 @@ export default function EditProjectScreen({ project, onClose, onSuccess }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date()); // Add missing state for date picker
   const [priority, setPriority] = useState('medium');
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
@@ -601,7 +602,7 @@ export default function EditProjectScreen({ project, onClose, onSuccess }) {
                   accessibilityLabel="Add deadline date"
                 >
                   <Ionicons name="calendar-outline" size={20} color="#6366f1" />
-                  <Text style={styles.addDeadlineText}>Set Deadline</Text>
+                  <Text style={styles.addDeadlineText}>Edit Deadline</Text>
                 </TouchableOpacity>
               )}
 

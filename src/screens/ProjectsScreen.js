@@ -52,7 +52,7 @@ import ProfileScreen from "./ProfileScreen";
 import SettingsScreen from "./SettingsScreen";
 
 
-export default function ProjectsScreen({ navigation, user, openSidebar }) {
+export default function ProjectsScreen({ navigation, route, user, openSidebar }) {
   // Project data state
   const [projects, setProjects] = useState([]);
   const [projectTasks, setProjectTasks] = useState({}); // Store tasks for each project
@@ -128,6 +128,24 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
       unsubscribe();
     };
   }, [currentUser]);
+
+  /**
+   * Handle auto-opening tasks view when navigated from calendar
+   */
+  useEffect(() => {
+    const openProjectId = route?.params?.openProjectId;
+    if (openProjectId && projects.length > 0) {
+      // Find the project to open
+      const projectToOpen = projects.find(p => p.id === openProjectId);
+      if (projectToOpen) {
+        console.log('Auto-opening tasks for project:', projectToOpen.title);
+        setSelectedProject(projectToOpen);
+        setShowTasksScreen(true);
+        // Clear the navigation param to prevent re-opening on subsequent renders
+        navigation.setParams({ openProjectId: undefined });
+      }
+    }
+  }, [route?.params?.openProjectId, projects, navigation]);
 
   /**
    * Set up real-time listener for all tasks to calculate project progress
@@ -338,9 +356,11 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
    * Circular Progress Component
    */
   const CircularProgress = ({ progress, size = 50 }) => {
+    // Ensure progress is a valid number between 0 and 100
+    const safeProgress = Math.max(0, Math.min(100, progress || 0));
     const radius = (size - 6) / 2;
     const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (progress / 100) * circumference;
+    const strokeDashoffset = circumference - (safeProgress / 100) * circumference;
 
     return (
       <View style={{ width: size, height: size }}>
@@ -377,7 +397,7 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-          <Text style={styles.progressText}>{progress}%</Text>
+          <Text style={styles.progressText}>{safeProgress}%</Text>
         </View>
       </View>
     );
@@ -416,9 +436,9 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
    * Render individual project item
    */
   const renderProjectItem = ({ item }) => {
-    const progress = calculateProgress(item.id);
-    const taskCount = getTaskCountString(item.id);
-    const taskStatus = getTaskStatusText(item.id);
+    const progress = calculateProgress(item.id) || 0;
+    const taskCount = getTaskCountString(item.id) || "0/0 Tasks";
+    const taskStatus = getTaskStatusText(item.id) || "No tasks yet";
 
     return (
       <View style={[

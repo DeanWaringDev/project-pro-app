@@ -8,6 +8,15 @@ function safeToDateString(deadline) {
   }
   return date instanceof Date && !isNaN(date) ? date.toDateString() : '';
 }
+
+// Utility to convert a Date object to YYYY-MM-DD format using local timezone
+function dateToLocalString(date) {
+  if (!date || !(date instanceof Date) || isNaN(date)) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 /**
  * CalendarScreen.js - Calendar View with Project and Task Deadlines
  *
@@ -62,6 +71,8 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
   const [year, setYear] = useState(today.getFullYear());
   const [deadlines, setDeadlines] = useState({}); // { 'YYYY-MM-DD': [ { type, title, ... }, ... ] }
   const [selectedDate, setSelectedDate] = useState(null); // { iso: 'YYYY-MM-DD', dateObj: Date }
+  const [projects, setProjects] = useState({}); // { projectId: { title, ... } }
+  const [taskCounts, setTaskCounts] = useState({}); // { projectId: { total, completed } }
   const monthMatrix = getMonthMatrix(year, month);
   const displayMonthName = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
 
@@ -77,7 +88,11 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
         date = new Date(date);
       }
       if (date instanceof Date && !isNaN(date)) {
-        return date.toISOString().slice(0, 10);
+        // Use local timezone to avoid timezone shift issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       }
       return null;
     }
@@ -88,46 +103,123 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
       where('userId', '==', currentUser.uid)
     );
     const unsubProjects = onSnapshot(projectsQuery, (querySnapshot) => {
-      const newDeadlines = {};
+      const projectDeadlines = {};
+      const projectsData = {};
+      
       querySnapshot.forEach(docSnap => {
         const data = docSnap.data();
+        const projectId = docSnap.id;
+        
+        // Store project data for lookup
+        projectsData[projectId] = {
+          id: projectId,
+          title: data.title,
+          ...data
+        };
+        
+        // Process deadline
         const dateStr = toDateString(data.deadline);
         if (dateStr) {
-          if (!newDeadlines[dateStr]) newDeadlines[dateStr] = [];
-          newDeadlines[dateStr].push({
+          if (!projectDeadlines[dateStr]) projectDeadlines[dateStr] = [];
+          projectDeadlines[dateStr].push({
             type: 'Project',
             title: data.title,
+            id: projectId,
             ...data
           });
         }
       });
-      setDeadlines(prev => ({ ...prev, ...newDeadlines }));
+      
+      // Update projects lookup
+      setProjects(projectsData);
+      
+      // Merge with existing deadlines, preserving other types
+      setDeadlines(prev => {
+        const updated = { ...prev };
+        // First, remove old project deadlines
+        Object.keys(updated).forEach(dateStr => {
+          updated[dateStr] = updated[dateStr].filter(item => item.type !== 'Project');
+          if (updated[dateStr].length === 0) {
+            delete updated[dateStr];
+          }
+        });
+        // Then add new project deadlines
+        Object.keys(projectDeadlines).forEach(dateStr => {
+          if (!updated[dateStr]) updated[dateStr] = [];
+          updated[dateStr] = [...updated[dateStr], ...projectDeadlines[dateStr]];
+        });
+        return updated;
+      });
     });
 
-    // Listen for task deadlines
-    const tasksQuery = query(
+    // Listen for all tasks to calculate task counts per project
+    const allTasksQuery = query(
       collection(db, 'tasks'),
       where('userId', '==', currentUser.uid)
     );
+    const unsubAllTasks = onSnapshot(allTasksQuery, (querySnapshot) => {
+      const counts = {};
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const projectId = data.projectId;
+        if (projectId) {
+          if (!counts[projectId]) {
+            counts[projectId] = { total: 0, completed: 0 };
+          }
+          counts[projectId].total++;
+          if (data.completed) {
+            counts[projectId].completed++;
+          }
+        }
+      });
+      setTaskCounts(counts);
+    });
+
+    // Listen for task deadlines (excluding completed tasks)
+    const tasksQuery = query(
+      collection(db, 'tasks'),
+      where('userId', '==', currentUser.uid),
+      where('completed', '==', false)
+    );
     const unsubTasks = onSnapshot(tasksQuery, (querySnapshot) => {
-      const newDeadlines = {};
+      const taskDeadlines = {};
       querySnapshot.forEach(docSnap => {
         const data = docSnap.data();
         const dateStr = toDateString(data.deadline);
         if (dateStr) {
-          if (!newDeadlines[dateStr]) newDeadlines[dateStr] = [];
-          newDeadlines[dateStr].push({
+          if (!taskDeadlines[dateStr]) taskDeadlines[dateStr] = [];
+          taskDeadlines[dateStr].push({
             type: 'Task',
             title: data.title,
+            id: docSnap.id,
+            projectId: data.projectId,
             ...data
           });
         }
       });
-      setDeadlines(prev => ({ ...prev, ...newDeadlines }));
+      
+      // Merge with existing deadlines, preserving other types
+      setDeadlines(prev => {
+        const updated = { ...prev };
+        // First, remove old task deadlines
+        Object.keys(updated).forEach(dateStr => {
+          updated[dateStr] = updated[dateStr].filter(item => item.type !== 'Task');
+          if (updated[dateStr].length === 0) {
+            delete updated[dateStr];
+          }
+        });
+        // Then add new task deadlines
+        Object.keys(taskDeadlines).forEach(dateStr => {
+          if (!updated[dateStr]) updated[dateStr] = [];
+          updated[dateStr] = [...updated[dateStr], ...taskDeadlines[dateStr]];
+        });
+        return updated;
+      });
     });
 
     return () => {
       unsubProjects();
+      unsubAllTasks();
       unsubTasks();
     };
   }, []);
@@ -187,7 +279,7 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
         {monthMatrix.map((week, i) => (
           <View key={i} style={styles.weekRow}>
             {week.map((date, j) => {
-              let dateStr = date ? date.toISOString().slice(0, 10) : '';
+              let dateStr = dateToLocalString(date);
               let isToday = date && date.toDateString() === today.toDateString();
               let hasDeadline = deadlines[dateStr] && deadlines[dateStr].length > 0;
               return (
@@ -195,7 +287,7 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
                   key={j}
                   style={[styles.dayCell, isToday && styles.todayCell]}
                   onPress={() => {
-                    if (date) setSelectedDate({ iso: date.toISOString().slice(0, 10), dateObj: date });
+                    if (date) setSelectedDate({ iso: dateToLocalString(date), dateObj: date });
                   }}
                   activeOpacity={date ? 0.7 : 1}
                   disabled={!date}
@@ -222,32 +314,41 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
             <Text style={styles.noDeadlinesText}>No deadlines for this date.</Text>
           ) : (
             <ScrollView style={{ maxHeight: 180 }}>
-              {selectedDeadlines.map((item, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={styles.deadlineItem}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    if (typeof onDeadlinePress === 'function') {
-                      if (item.type === 'Project') {
-                        onDeadlinePress({
-                          type: 'Project',
-                          projectId: item.id,
-                        });
-                      } else if (item.type === 'Task') {
-                        onDeadlinePress({
-                          type: 'Task',
-                          projectId: item.projectId,
-                          taskId: item.id,
-                        });
+              {selectedDeadlines.map((item, idx) => {
+                // Enhanced display text based on item type
+                let displayText = '';
+                let subText = '';
+                
+                if (item.type === 'Project') {
+                  const taskCount = taskCounts[item.id];
+                  const remaining = taskCount ? taskCount.total - taskCount.completed : 0;
+                  displayText = `Project: ${item.title}`;
+                  subText = remaining > 0 ? `${remaining} task${remaining !== 1 ? 's' : ''} remaining` : 'All tasks complete';
+                } else if (item.type === 'Task') {
+                  const projectTitle = projects[item.projectId]?.title || 'Unknown Project';
+                  displayText = `Task: ${item.title}`;
+                  subText = `Project: ${projectTitle}`;
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.deadlineItem}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      // Navigate to Projects screen - the tasks modal is handled there
+                      const projectId = item.type === 'Project' ? item.id : item.projectId;
+                      if (projectId && navigation) {
+                        // Navigate to Projects screen with a project ID to auto-open tasks
+                        navigation.navigate('Projects', { openProjectId: projectId });
                       }
-                    }
-                  }}
-                >
-                  <Text style={styles.deadlineType}>{item.type}</Text>
-                  <Text style={styles.deadlineTitle}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
+                    }}
+                  >
+                    <Text style={styles.deadlineTitle}>{displayText}</Text>
+                    <Text style={styles.deadlineSubtitle}>{subText}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           )}
         </View>
@@ -354,10 +455,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   deadlineItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    paddingVertical: 4,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
   },
@@ -371,6 +473,12 @@ const styles = StyleSheet.create({
   deadlineTitle: {
     color: '#fff',
     fontSize: 15,
-    flex: 1,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  deadlineSubtitle: {
+    color: '#94a3b8',
+    fontSize: 13,
+    fontStyle: 'italic',
   },
 });

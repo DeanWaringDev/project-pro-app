@@ -19,7 +19,8 @@
       "package": "com.deanwaringdev.projectpro",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "plugins": [
       "expo-image-picker",
@@ -33,7 +34,14 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1006772650440-kreg1u5jppnllu8e0ae37blpnn5iihfu"
+        }
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

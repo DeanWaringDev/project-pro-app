@@ -9,9 +9,10 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Firebase configuration object
@@ -41,8 +42,10 @@ console.log('Firebase app initialized successfully');
  */
 
 // Authentication service - handles user login/signup/logout with persistent storage
-export const auth = getAuth(app);
-console.log('Firebase Auth initialized');
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
+console.log('Firebase Auth initialized with AsyncStorage persistence');
 
 // Firestore database - stores projects, tasks, and user data
 export const db = getFirestore(app);
