@@ -26,13 +26,5 @@
         "image": "latest"
       }
     }
-  },
-  "hooks": {
-    "prebuild": [
-      {
-        "file": "./hooks/prebuild.js",
-        "when": "before"
-      }
-    ]
   }
 }
