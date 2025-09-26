@@ -19,6 +19,12 @@
         "resourceClass": "large"
       },
       "distribution": "internal"
+    },
+    "production": {
+      "android": {
+        "buildType": "aab",
+        "image": "latest"
+      }
     }
   }
 }
