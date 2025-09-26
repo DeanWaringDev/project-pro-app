@@ -7,7 +7,7 @@ import Header from '../components/Header';
 const ProfileScreen = ({ navigation, openSidebar }) => {
   return (
     <View style={styles.container}>
-      <Header title="Profile" onMenuPress={openSidebar} />
+      <Header title="Profile" onMenuPress={openSidebar} navigation={navigation} />
       <Text style={styles.text}>This is the Profile screen. Add your profile details here.</Text>
     </View>
   );

@@ -1,4 +1,28 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.version": "8.14.3",
+    "java.import.gradle.home": "",
+    "java.import.gradle.arguments": "--refresh-dependencies --rerun-tasks",
+    "java.import.gradle.jvmArguments": "-Dorg.gradle.daemon=true -Xmx2g",
+    "java.import.gradle.offline.enabled": false,
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/build/**",
+        "**/.gradle/**"
+    ],
+    "java.project.sourcePaths": [
+        "android/app/src/main/java"
+    ],
+    "java.project.referencedLibraries": [],
+    "java.configuration.workspaceCache.limit": 90,
+    "files.exclude": {
+        "**/node_modules/**/android/.settings": true,
+        "**/node_modules/**/android/.project": true,
+        "**/node_modules/**/android/.classpath": true,
+        "**/.gradle": true,
+        "**/build": true
+    }
 }

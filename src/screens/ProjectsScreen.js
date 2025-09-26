@@ -70,6 +70,7 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
 
   // Remove sidebar state from here
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const currentUser = auth.currentUser;
   const screenWidth = Dimensions.get('window').width;
@@ -232,6 +233,7 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
     console.log("Closing Tasks screen");
     setShowTasksScreen(false);
     setSelectedProject(null);
+    setSelectedTaskId(null);
   };
 
   const handleBackFromCalendar = () => {
@@ -562,7 +564,7 @@ export default function ProjectsScreen({ navigation, user, openSidebar }) {
       <StatusBar style="light" />
 
       {/* Header */}
-      <Header title="Project Pro" onMenuPress={openSidebar} />
+      <Header title="Project Pro" onMenuPress={openSidebar} navigation={navigation} />
 
       {/* Projects List */}
       <FlatList

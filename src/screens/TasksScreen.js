@@ -39,6 +39,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import AddTaskScreen from './AddTaskScreen';
+import EditTaskScreen from './EditTaskScreen';
 
 export default function TasksScreen({ project, onBack, selectedTaskId }) {
   // Task data state
@@ -62,6 +63,8 @@ export default function TasksScreen({ project, onBack, selectedTaskId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showEditTask, setShowEditTask] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
   const [forceRefresh, setForceRefresh] = useState(0); // Force refresh counter
 
   const currentUser = auth.currentUser;
@@ -334,6 +337,25 @@ export default function TasksScreen({ project, onBack, selectedTaskId }) {
   };
 
   /**
+   * Handle task editing - open edit modal
+   */
+  const handleEditTask = (task) => {
+    console.log("Edit button pressed for task:", task.title);
+    setTaskToEdit(task);
+    setShowEditTask(true);
+  };
+
+  /**
+   * Handle edit task completion
+   */
+  const handleTaskUpdated = () => {
+    console.log("Task updated, refreshing tasks list");
+    setShowEditTask(false);
+    setTaskToEdit(null);
+    triggerRefresh();
+  };
+
+  /**
    * Get priority color based on priority level
    */
   const getPriorityColor = (priority) => {
@@ -469,19 +491,36 @@ export default function TasksScreen({ project, onBack, selectedTaskId }) {
             </View>
           </View>
 
-          {/* Delete Button with enhanced event handling */}
-          <TouchableOpacity
-            onPress={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              handleDeleteTask(item);
-            }}
-            style={styles.deleteTaskButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel={`Delete ${item.title}`}
-          >
-            <Ionicons name="trash-outline" size={16} color="#ef4444" />
-          </TouchableOpacity>
+          {/* Action Buttons Container */}
+          <View style={styles.actionButtonsContainer}>
+            {/* Edit Button */}
+            <TouchableOpacity
+              onPress={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                handleEditTask(item);
+              }}
+              style={styles.editTaskButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel={`Edit ${item.title}`}
+            >
+              <Ionicons name="create-outline" size={22} color="#3b82f6" />
+            </TouchableOpacity>
+
+            {/* Delete Button with enhanced event handling */}
+            <TouchableOpacity
+              onPress={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                handleDeleteTask(item);
+              }}
+              style={styles.deleteTaskButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel={`Delete ${item.title}`}
+            >
+              <Ionicons name="trash-outline" size={22} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -605,6 +644,28 @@ export default function TasksScreen({ project, onBack, selectedTaskId }) {
           project={project}
           onClose={handleCloseAddTask}
           onSuccess={() => handleCloseAddTask(true)}
+        />
+      </Modal>
+
+      {/* Edit Task Modal */}
+      <Modal
+        visible={showEditTask}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => {
+          setShowEditTask(false);
+          setTaskToEdit(null);
+        }}
+      >
+        <EditTaskScreen 
+          visible={showEditTask}
+          task={taskToEdit}
+          projectId={project?.id}
+          onClose={() => {
+            setShowEditTask(false);
+            setTaskToEdit(null);
+          }}
+          onTaskUpdated={handleTaskUpdated}
         />
       </Modal>
     </View>
@@ -771,9 +832,26 @@ const styles = StyleSheet.create({
     color: "#ef4444",
     fontWeight: "600",
   },
-  deleteTaskButton: {
-    padding: 8, // Increased touch area for web
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: 12,
+  },
+  editTaskButton: {
+    padding: 8,
+    marginLeft: 8,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
+  },
+  deleteTaskButton: {
+    padding: 8,
+    marginLeft: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
   },
   emptyContainer: {
     flex: 1,

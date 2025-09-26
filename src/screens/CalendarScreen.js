@@ -168,7 +168,7 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
 
   return (
     <View style={styles.container}>
-      <Header title="Calendar" onMenuPress={openSidebar} />
+      <Header title="Calendar" onMenuPress={openSidebar} navigation={navigation} />
       <View style={styles.calendarContainer}>
         <View style={styles.monthNav}>
           <TouchableOpacity onPress={handlePrevMonth} style={styles.monthNavBtn}>

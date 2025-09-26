@@ -25,6 +25,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { 
   collection, 
   addDoc, 
@@ -42,189 +43,20 @@ export default function AddTaskScreen({ project, onClose, onSuccess }) {
   
   // UI state
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
 
   const currentUser = auth.currentUser;
   const screenWidth = Dimensions.get('window').width;
   const isWeb = Platform.OS === 'web';
 
-  /**
-   * Priority options with colors, icons, and descriptions
-   */
-  const priorityOptions = [
-    { 
-      value: 'low', 
-      label: 'Low Priority', 
-      color: '#10b981',
-      icon: 'chevron-down-circle',
-      description: 'Can be done later'
-    },
-    { 
-      value: 'medium', 
-      label: 'Medium Priority', 
-      color: '#f59e0b',
-      icon: 'remove-circle',
-      description: 'Should be done soon'
-    },
-    { 
-      value: 'urgent', 
-      label: 'Urgent Priority', 
-      color: '#ef4444',
-      icon: 'chevron-up-circle',
-      description: 'Needs immediate attention'
-    },
+  // Priority options (matching EditTaskScreen)
+  const priorities = [
+    { key: 'low', label: 'Low Priority', color: '#10b981', icon: 'arrow-down' },
+    { key: 'medium', label: 'Medium Priority', color: '#f59e0b', icon: 'remove' },
+    { key: 'urgent', label: 'Urgent', color: '#ef4444', icon: 'arrow-up' },
   ];
 
-  /**
-   * Custom calendar component for deadline selection
-   */
-  const renderCalendar = () => {
-    const today = new Date();
-    
-    const getDaysInMonth = (date) => {
-      return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    };
-    
-    const getFirstDayOfMonth = (date) => {
-      return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-    };
-    
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    
-    const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDay = getFirstDayOfMonth(currentMonth);
-    const days = [];
-    
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
-    }
-    
-    const isToday = (day) => {
-      const testDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      return testDate.toDateString() === today.toDateString();
-    };
-    
-    const isSelected = (day) => {
-      if (!deadline) return false;
-      const testDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      return testDate.toDateString() === deadline.toDateString();
-    };
-    
-    const isPastDate = (day) => {
-      const testDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      testDate.setHours(0, 0, 0, 0);
-      todayDateOnly.setHours(0, 0, 0, 0);
-      return testDate < todayDateOnly;
-    };
-    
-    const selectDate = (day) => {
-      if (isPastDate(day)) {
-        const message = 'Please select today or a future date for your task deadline.';
-        if (isWeb) {
-          alert(message);
-        } else {
-          Alert.alert('Invalid Date', message);
-        }
-        return;
-      }
-      
-      const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      setDeadline(selectedDate);
-      setShowDatePicker(false);
-      console.log('Task deadline selected:', selectedDate.toDateString());
-    };
-    
-    const previousMonth = () => {
-      setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-    };
-    
-    const nextMonth = () => {
-      setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-    };
-    
-    return (
-      <View style={[
-        styles.calendarContainer,
-        isWeb && screenWidth > 768 && styles.calendarContainerWeb
-      ]}>
-        <View style={styles.calendarHeader}>
-          <TouchableOpacity onPress={previousMonth} style={styles.calendarNavButton}>
-            <Ionicons name="chevron-back" size={20} color="#3b82f6" />
-          </TouchableOpacity>
-          
-          <Text style={styles.calendarTitle}>
-            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-          </Text>
-          
-          <TouchableOpacity onPress={nextMonth} style={styles.calendarNavButton}>
-            <Ionicons name="chevron-forward" size={20} color="#3b82f6" />
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.calendarDayLabels}>
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <Text key={day} style={styles.calendarDayLabel}>{day}</Text>
-          ))}
-        </View>
-        
-        <View style={styles.calendarGrid}>
-          {days.map((day, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => day && selectDate(day)}
-              style={[
-                styles.calendarDay,
-                day && isToday(day) && styles.calendarToday,
-                day && isSelected(day) && styles.calendarSelected,
-                day && isPastDate(day) && styles.calendarPast,
-              ]}
-              disabled={!day || isPastDate(day)}
-            >
-              <Text
-                style={[
-                  styles.calendarDayText,
-                  day && isToday(day) && styles.calendarTodayText,
-                  day && isSelected(day) && styles.calendarSelectedText,
-                  day && isPastDate(day) && styles.calendarPastText,
-                ]}
-              >
-                {day || ''}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        <View style={styles.calendarFooter}>
-          <TouchableOpacity
-            onPress={() => {
-              setDeadline(null);
-              setShowDatePicker(false);
-              console.log('Task deadline cleared');
-            }}
-            style={styles.calendarClearButton}
-          >
-            <Text style={styles.calendarClearText}>Clear Date</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(false)}
-            style={styles.calendarCancelButton}
-          >
-            <Text style={styles.calendarCancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+
 
   /**
    * Validate form inputs before submission
@@ -407,61 +239,13 @@ export default function AddTaskScreen({ project, onClose, onSuccess }) {
     }
   };
 
-  /**
-   * Render priority selection options
-   */
-  const renderPriorityOption = (option) => {
-    const isSelected = priority === option.value;
-    
-    return (
-      <TouchableOpacity
-        key={option.value}
-        onPress={() => {
-          setPriority(option.value);
-          console.log('Task priority selected:', option.value);
-        }}
-        style={[
-          styles.priorityOption,
-          isSelected && styles.priorityOptionSelected
-        ]}
-      >
-        <Ionicons 
-          name={option.icon} 
-          size={24} 
-          color={isSelected ? option.color : '#64748b'} 
-        />
-        <View style={styles.priorityContent}>
-          <Text 
-            style={[
-              styles.priorityLabel,
-              isSelected && styles.priorityLabelSelected
-            ]}
-          >
-            {option.label}
-          </Text>
-          <Text 
-            style={[
-              styles.priorityDescription,
-              isSelected && styles.priorityDescriptionSelected
-            ]}
-          >
-            {option.description}
-          </Text>
-        </View>
-        {isSelected && (
-          <Ionicons name="checkmark-circle" size={20} color={option.color} />
-        )}
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       
       {/* Header with Project Context */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={onClose} style={styles.backButton}>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Ionicons name="close" size={24} color="white" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -470,7 +254,21 @@ export default function AddTaskScreen({ project, onClose, onSuccess }) {
             to {project?.title || 'Project'}
           </Text>
         </View>
-        <View style={styles.placeholder} />
+        <TouchableOpacity 
+          onPress={handleSaveTask}
+          style={[
+            styles.saveButton,
+            (!title.trim() || !description.trim()) && styles.saveButtonDisabled
+          ]}
+          disabled={!title.trim() || !description.trim()}
+        >
+          <Text style={[
+            styles.saveButtonText,
+            (!title.trim() || !description.trim()) && styles.saveButtonTextDisabled
+          ]}>
+            Save
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
@@ -485,89 +283,134 @@ export default function AddTaskScreen({ project, onClose, onSuccess }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-
+          <View style={styles.form}>
           {/* Task Title */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Task Title *</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Task Title *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter task title"
-              placeholderTextColor="#9ca3af"
               value={title}
               onChangeText={setTitle}
+              placeholder="Enter task title"
+              placeholderTextColor="#9ca3af"
+              multiline={false}
               maxLength={100}
-              returnKeyType="next"
             />
-            <Text style={styles.characterCount}>
-              {title.length}/100 characters
-            </Text>
           </View>
 
           {/* Task Description */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description (Optional)</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Description</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Describe the task (optional)"
-              placeholderTextColor="#9ca3af"
               value={description}
               onChangeText={setDescription}
+              placeholder="Enter task description (optional)"
+              placeholderTextColor="#9ca3af"
               multiline={true}
-              numberOfLines={3}
-              maxLength={300}
+              numberOfLines={4}
               textAlignVertical="top"
-              returnKeyType="done"
+              maxLength={500}
             />
-            <Text style={styles.characterCount}>
-              {description.length}/300 characters
-            </Text>
-          </View>
-
-          {/* Deadline Selection */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Deadline (Optional)</Text>
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(!showDatePicker)}
-              style={styles.datePickerButton}
-            >
-              <View style={styles.datePickerContent}>
-                <Ionicons name="calendar-outline" size={20} color="#64748b" />
-                <Text style={styles.datePickerText}>
-                  {deadline ? deadline.toLocaleDateString() : 'Select deadline date'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
-            </TouchableOpacity>
-
-            {showDatePicker && renderCalendar()}
           </View>
 
           {/* Priority Selection */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Priority *</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Priority Level</Text>
             <View style={styles.priorityContainer}>
-              {priorityOptions.map(renderPriorityOption)}
+              {priorities.map((priorityOption) => (
+                <TouchableOpacity
+                  key={priorityOption.key}
+                  style={[
+                    styles.priorityOption,
+                    priority === priorityOption.key && styles.priorityOptionSelected,
+                    { borderColor: priorityOption.color }
+                  ]}
+                  onPress={() => setPriority(priorityOption.key)}
+                  accessibilityLabel={`Select ${priorityOption.label}`}
+                >
+                  <Ionicons 
+                    name={priorityOption.icon} 
+                    size={16} 
+                    color={priority === priorityOption.key ? 'white' : priorityOption.color} 
+                  />
+                  <Text style={[
+                    styles.priorityText,
+                    priority === priorityOption.key && styles.priorityTextSelected
+                  ]}>
+                    {priorityOption.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
+          {/* Deadline Selection */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Deadline (Optional)</Text>
+            
+            {deadline ? (
+              <View style={styles.deadlineDisplay}>
+                <View style={styles.deadlineInfo}>
+                  <Ionicons name="calendar-outline" size={20} color="#6366f1" />
+                  <Text style={styles.deadlineText}>
+                    {deadline.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.deadlineButtons}>
+                  <TouchableOpacity 
+                    onPress={() => setShowDatePicker(true)}
+                    style={styles.editDeadlineButton}
+                    accessibilityLabel="Change deadline date"
+                  >
+                    <Ionicons name="pencil" size={12} color="white" />
+                    <Text style={styles.deadlineButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={() => setDeadline(null)}
+                    style={styles.clearDeadlineButton}
+                    accessibilityLabel="Remove deadline"
+                  >
+                    <Ionicons name="trash" size={12} color="white" />
+                    <Text style={styles.deadlineButtonText}>Clear</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                style={styles.addDeadlineButton}
+                onPress={() => setShowDatePicker(true)}
+                accessibilityLabel="Add deadline date"
+              >
+                <Ionicons name="calendar-outline" size={20} color="#6366f1" />
+                <Text style={styles.addDeadlineText}>Set Deadline</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Date Picker */}
+            {showDatePicker && (
+              <DateTimePicker
+                value={deadline || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(Platform.OS === 'ios');
+                  if (selectedDate) {
+                    setDeadline(selectedDate);
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+          </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Save Button */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={handleSaveTask}
-          disabled={isLoading || !title.trim()}
-          style={[
-            styles.saveButton,
-            (isLoading || !title.trim()) && styles.saveButtonDisabled
-          ]}
-        >
-          <Text style={styles.saveButtonText}>
-            {isLoading ? 'Creating Task...' : 'Create Task'}
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -578,7 +421,7 @@ export default function AddTaskScreen({ project, onClose, onSuccess }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#1f2937',
   },
   header: {
     flexDirection: 'row',
@@ -587,12 +430,29 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'web' ? 20 : 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#1f2937',
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#374151',
   },
-  backButton: {
+  closeButton: {
     padding: 4,
+  },
+  saveButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#4b5563',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  saveButtonTextDisabled: {
+    color: '#9ca3af',
   },
   headerContent: {
     alignItems: 'center',
@@ -622,26 +482,36 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
   },
-  section: {
+  form: {
+    flex: 1,
+  },
+  formGroup: {
     marginBottom: 24,
   },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 18,
+  label: {
+    fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
+    color: 'white',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1e293b',
-    color: 'white',
+    backgroundColor: '#374151',
+    borderRadius: 12,
     padding: 16,
-    borderRadius: 8,
     fontSize: 16,
+    color: 'white',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#4b5563',
   },
   textArea: {
-    height: 80,
+    backgroundColor: '#374151',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: 'white',
+    borderWidth: 1,
+    borderColor: '#4b5563',
+    minHeight: 120,
     textAlignVertical: 'top',
   },
   characterCount: {
@@ -650,128 +520,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'right',
   },
-  datePickerButton: {
-    backgroundColor: '#1e293b',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  datePickerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  datePickerText: {
-    color: 'white',
-    fontSize: 16,
-    marginLeft: 12,
-  },
-  calendarContainer: {
-    marginTop: 12,
-    backgroundColor: '#1e293b',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-    padding: 16,
-  },
-  calendarContainerWeb: {
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  calendarNavButton: {
-    padding: 8,
-    borderRadius: 4,
-  },
-  calendarTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  calendarDayLabels: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  calendarDayLabel: {
-    flex: 1,
-    textAlign: 'center',
-    color: '#64748b',
-    fontSize: 12,
-    fontWeight: '600',
-    paddingVertical: 4,
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  calendarDay: {
-    width: '14.28%',
-    aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-    borderRadius: 20,
-  },
-  calendarToday: {
-    backgroundColor: '#3b82f6',
-  },
-  calendarSelected: {
-    backgroundColor: '#10b981',
-  },
-  calendarPast: {
-    opacity: 0.3,
-  },
-  calendarDayText: {
-    color: 'white',
+  description: {
     fontSize: 14,
-    fontWeight: '500',
-  },
-  calendarTodayText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  calendarSelectedText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  calendarPastText: {
-    color: '#64748b',
-  },
-  calendarFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#334155',
-  },
-  calendarClearButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#374151',
-    borderRadius: 6,
-  },
-  calendarClearText: {
-    color: '#ef4444',
-    fontWeight: '600',
-  },
-  calendarCancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#3b82f6',
-    borderRadius: 6,
-  },
-  calendarCancelText: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#9ca3af',
+    marginTop: 6,
+    lineHeight: 20,
   },
   priorityContainer: {
     gap: 12,
@@ -780,58 +533,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#334155',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#374151',
   },
   priorityOptionSelected: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#6366f1',
   },
-  priorityContent: {
-    flex: 1,
+  priorityText: {
     marginLeft: 12,
-  },
-  priorityLabel: {
-    color: '#64748b',
     fontSize: 16,
-    fontWeight: '600',
+    color: 'white',
+    fontWeight: '500',
   },
-  priorityLabelSelected: {
+  priorityTextSelected: {
     color: 'white',
   },
-  priorityDescription: {
-    color: '#475569',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  priorityDescriptionSelected: {
-    color: '#94a3b8',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#0f172a',
+  deadlineDisplay: {
+    backgroundColor: '#374151',
+    borderRadius: 12,
     padding: 16,
-    paddingBottom: Platform.OS === 'android' ? 48 : 16, // Increase from 32 to 48 on Android
-    borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderWidth: 1,
+    borderColor: '#4b5563',
   },
-  saveButton: {
-    backgroundColor: '#3b82f6',
-    padding: 16,
-    borderRadius: 8,
+  deadlineInfo: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  saveButtonDisabled: {
-    backgroundColor: '#334155',
-  },
-  saveButtonText: {
+  deadlineText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+    flex: 1,
+  },
+  deadlineButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editDeadlineButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  clearDeadlineButton: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  deadlineButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  addDeadlineButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#4b5563',
+    borderStyle: 'dashed',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  addDeadlineText: {
+    color: '#9ca3af',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

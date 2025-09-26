@@ -2,16 +2,26 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Header({ title, onMenuPress }) {
+export default function Header({ title, onMenuPress, navigation }) {
+  const handleLogoPress = () => {
+    if (navigation) {
+      navigation.navigate('Projects');
+    }
+  };
+
   return (
     <View style={styles.header}>
-      <View style={styles.logoContainer}>
+      <TouchableOpacity 
+        style={styles.logoContainer}
+        onPress={handleLogoPress}
+        accessibilityLabel="Go to home"
+      >
         <Image
           source={require('../../assets/logo.png')}
           style={styles.headerLogo}
           resizeMode="contain"
         />
-      </View>
+      </TouchableOpacity>
       <Text style={styles.headerTitle}>{title}</Text>
       <TouchableOpacity
         onPress={onMenuPress}

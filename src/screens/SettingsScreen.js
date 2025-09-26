@@ -7,7 +7,7 @@ import Header from '../components/Header';
 const SettingsScreen = ({ navigation, openSidebar }) => {
   return (
     <View style={styles.container}>
-      <Header title="Settings" onMenuPress={openSidebar} />
+      <Header title="Settings" onMenuPress={openSidebar} navigation={navigation} />
       <Text style={styles.text}>This is the Settings screen. Add your settings options here.</Text>
     </View>
   );
