@@ -24,10 +24,15 @@
       "android": {
         "buildType": "apk",
         "image": "latest"
-      },
-      "hooks": {
-        "prebuild": "node hooks/prebuild.js"
       }
     }
+  },
+  "hooks": {
+    "prebuild": [
+      {
+        "file": "./hooks/prebuild.js",
+        "when": "before"
+      }
+    ]
   }
 }
