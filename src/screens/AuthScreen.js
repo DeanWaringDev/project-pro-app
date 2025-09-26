@@ -59,7 +59,7 @@ export default function AuthScreen() {
         if (Platform.OS !== 'web') {
           // Configure Google Sign-In for mobile
           await GoogleSignin.configure({
-            webClientId: '1006772650440-kreg1u5jppnllu8e0ae37blpnn5iihfu.apps.googleusercontent.com', // From your firebase config
+            webClientId: '1006772650440-vhln13aror5fcph3sj2b66kllrjj90e2.apps.googleusercontent.com', // Android client for EAS build certificate
           });
         } else {
           // Handle redirect result for web
