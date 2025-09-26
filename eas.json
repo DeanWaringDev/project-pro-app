@@ -24,6 +24,9 @@
       "android": {
         "buildType": "apk",
         "image": "latest"
+      },
+      "hooks": {
+        "prebuild": "node hooks/prebuild.js"
       }
     }
   }
