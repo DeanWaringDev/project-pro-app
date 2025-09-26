@@ -19,8 +19,7 @@
       "package": "com.deanwaringdev.projectpro",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ],
-      "googleServicesFile": "./android/app/google-services.json"
+      ]
     },
     "plugins": [
       "expo-image-picker",
