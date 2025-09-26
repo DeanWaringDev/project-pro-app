@@ -1,22 +1,3 @@
-// Utility to safely convert Firestore Timestamp, string, or Date to a valid date string
-function safeToDateString(deadline) {
-  let date = deadline;
-  if (date && typeof date === 'object' && date.toDate) {
-    date = date.toDate();
-  } else if (date && !(date instanceof Date)) {
-    date = new Date(date);
-  }
-  return date instanceof Date && !isNaN(date) ? date.toDateString() : '';
-}
-
-// Utility to convert a Date object to YYYY-MM-DD format using local timezone
-function dateToLocalString(date) {
-  if (!date || !(date instanceof Date) || isNaN(date)) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 /**
  * CalendarScreen.js - Calendar View with Project and Task Deadlines
  *
@@ -29,16 +10,13 @@ function dateToLocalString(date) {
  * - Responsive design for web and mobile
  */
 
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import Header from '../components/Header';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
+import { safeToDateString, dateToLocalString } from '../utils/dateUtils';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

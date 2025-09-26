@@ -1,8 +1,34 @@
 
+/**
+ * ProfileScreen.js - User Profile Display and Management Screen
+ * 
+ * This screen displays and manages user profile information including:
+ * - User account details
+ * - Profile picture management  
+ * - Personal preferences
+ * - Account settings
+ * - User statistics (projects created, tasks completed, etc.)
+ * 
+ * Features:
+ * - Profile picture upload/change
+ * - Editable user information
+ * - Account preferences
+ * - User activity statistics
+ * - Sign out functionality
+ * 
+ * TODO: Implement full profile functionality
+ * - Connect to user authentication data
+ * - Add profile picture management
+ * - Include user statistics from Firestore
+ * - Add edit profile functionality
+ * 
+ * @param {Object} navigation - React Navigation object for screen navigation
+ * @param {Function} openSidebar - Function to open the sidebar menu
+ */
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Header from '../components/Header';
-
 
 const ProfileScreen = ({ navigation, openSidebar }) => {
   return (

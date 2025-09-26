@@ -1,16 +1,41 @@
+/**
+ * AppNavigator.js - Main Navigation and Authentication Controller
+ * 
+ * This component serves as the central navigation hub and authentication state manager.
+ * 
+ * Key Features:
+ * - Firebase authentication state management with persistence
+ * - Navigation between authenticated and unauthenticated states
+ * - Sidebar navigation integration
+ * - Loading state management during auth initialization
+ * - User session persistence across app restarts
+ * 
+ * Authentication Flow:
+ * 1. Check for stored authentication state (offline persistence)
+ * 2. Initialize Firebase auth state listener
+ * 3. Restore user session if valid stored state exists
+ * 4. Update UI based on authentication status
+ */
+
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View, Text } from 'react-native';
+import { onAuthStateChanged } from 'firebase/auth';
+
+// Screens
 import AuthScreen from './src/screens/AuthScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+
+// Components
 import SidebarMenu from './src/components/SidebarMenu';
+
+// Configuration & Utils
 import { auth } from './src/config/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { ActivityIndicator, View, Text } from 'react-native';
 import { storeAuthState, clearAuthState, getStoredAuthState } from './src/utils/authStorage';
 
 const Stack = createNativeStackNavigator();

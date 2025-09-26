@@ -1,5 +1,36 @@
 #!/usr/bin/env node
 
+/**
+ * prebuild.js - EAS Build Prebuild Hook for Google Services Configuration
+ * 
+ * This prebuild hook runs automatically during the EAS build process to:
+ * - Set up Google Services configuration from environment variables
+ * - Create google-services.json from base64 encoded environment data
+ * - Ensure proper directory structure for Android builds
+ * - Update app.json configuration with Google Services file reference
+ * 
+ * Environment Requirements:
+ * - GOOGLE_SERVICES_JSON: Base64 encoded google-services.json content
+ * 
+ * Build Process Integration:
+ * 1. Runs before the main build process starts
+ * 2. Checks for required environment variables
+ * 3. Creates android/app directory if needed
+ * 4. Decodes and writes google-services.json
+ * 5. Updates app.json configuration
+ * 6. Provides detailed logging for debugging
+ * 
+ * Error Handling:
+ * - Gracefully handles missing environment variables
+ * - Continues build process even if Google Services setup fails
+ * - Provides detailed error logging for troubleshooting
+ * 
+ * Security Notes:
+ * - Uses environment variables to avoid committing sensitive data
+ * - Base64 encoding ensures proper handling of JSON structure
+ * - Only runs during build process, not in development
+ */
+
 const fs = require('fs');
 const path = require('path');
 

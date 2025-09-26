@@ -1,8 +1,29 @@
+/**
+ * Header.js - Reusable Header Component
+ * 
+ * A consistent header component used across all screens.
+ * 
+ * Features:
+ * - Logo that navigates to home/projects screen
+ * - Dynamic title display
+ * - Menu button for sidebar navigation
+ * - Accessibility support
+ * - Responsive design for web and mobile
+ * 
+ * Props:
+ * @param {string} title - The title to display in the header
+ * @param {function} onMenuPress - Callback function when menu button is pressed
+ * @param {object} navigation - React Navigation object for screen navigation
+ */
+
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Header({ title, onMenuPress, navigation }) {
+  /**
+   * Handle logo press - navigate to Projects screen (home)
+   */
   const handleLogoPress = () => {
     if (navigation) {
       navigation.navigate('Projects');

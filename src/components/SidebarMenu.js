@@ -1,3 +1,25 @@
+/**
+ * SidebarMenu.js - Animated Sidebar Navigation Component
+ * 
+ * A slide-out navigation menu with smooth animations and theme support.
+ * 
+ * Features:
+ * - Smooth slide-in/slide-out animations
+ * - Theme switching (dark/light mode)
+ * - User profile display
+ * - Navigation to all main screens
+ * - Sign out functionality with cleanup
+ * - Responsive design for different screen sizes
+ * 
+ * Props:
+ * @param {boolean} visible - Controls sidebar visibility
+ * @param {function} onClose - Callback to close the sidebar
+ * @param {function} onNavigate - Callback for navigation with screen parameter
+ * @param {string} currentTheme - Current theme ('dark' or 'light')
+ * @param {function} onThemeToggle - Callback to toggle theme
+ * @param {object} user - Current user object with profile information
+ */
+
 import React, { useRef, useEffect } from 'react';
 import {
   View,
@@ -23,7 +45,11 @@ export default function SidebarMenu({
   user = null
 }) {
   const isDark = currentTheme === 'dark';
-  const slideAnim = useRef(new Animated.Value(320)).current;
+  const slideAnim = useRef(new Animated.Value(320)).current; // Start off-screen
+
+  /**
+   * Handle sidebar slide animations
+   */
 
   useEffect(() => {
     if (visible) {

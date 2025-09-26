@@ -1,8 +1,37 @@
 
+/**
+ * SettingsScreen.js - Application Settings and Configuration Screen
+ * 
+ * This screen provides access to application settings and user preferences:
+ * - Theme preferences (dark/light mode)
+ * - Notification settings
+ * - Data management options
+ * - Privacy settings
+ * - App version information
+ * - Help and support links
+ * 
+ * Features:
+ * - Theme toggle functionality
+ * - Notification preferences management
+ * - Data export/import options
+ * - Privacy controls
+ * - About section with app information
+ * - Help and feedback options
+ * 
+ * TODO: Implement full settings functionality
+ * - Add theme toggle with context
+ * - Implement notification preferences
+ * - Add data management options
+ * - Include privacy settings
+ * - Add app information and version
+ * 
+ * @param {Object} navigation - React Navigation object for screen navigation
+ * @param {Function} openSidebar - Function to open the sidebar menu
+ */
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Header from '../components/Header';
-
 
 const SettingsScreen = ({ navigation, openSidebar }) => {
   return (
