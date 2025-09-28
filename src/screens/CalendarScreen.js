@@ -260,10 +260,15 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
               let dateStr = dateToLocalString(date);
               let isToday = date && date.toDateString() === today.toDateString();
               let hasDeadline = deadlines[dateStr] && deadlines[dateStr].length > 0;
+              let isSelected = selectedDate && selectedDate.iso === dateStr;
               return (
                 <TouchableOpacity
                   key={j}
-                  style={[styles.dayCell, isToday && styles.todayCell]}
+                  style={[
+                    styles.dayCell, 
+                    isToday && styles.todayCell,
+                    isSelected && styles.selectedCell
+                  ]}
                   onPress={() => {
                     if (date) setSelectedDate({ iso: dateToLocalString(date), dateObj: date });
                   }}
@@ -322,8 +327,21 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
                       }
                     }}
                   >
-                    <Text style={styles.deadlineTitle}>{displayText}</Text>
-                    <Text style={styles.deadlineSubtitle}>{subText}</Text>
+                    <View style={styles.deadlineItemContent}>
+                      <View style={styles.deadlineTextContainer}>
+                        <Text style={styles.deadlineTitle}>{displayText}</Text>
+                        <Text style={styles.deadlineSubtitle}>{subText}</Text>
+                      </View>
+                      {item.priority && (
+                        <View style={[styles.priorityIndicator, 
+                          item.priority === 'High' && styles.priorityHigh,
+                          item.priority === 'Medium' && styles.priorityMedium,
+                          item.priority === 'Low' && styles.priorityLow
+                        ]}>
+                          <Text style={styles.priorityText}>{item.priority}</Text>
+                        </View>
+                      )}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -397,6 +415,10 @@ const styles = StyleSheet.create({
   todayCell: {
     backgroundColor: '#3b82f6',
   },
+  selectedCell: {
+    borderWidth: 2,
+    borderColor: '#f97316',
+  },
   dateText: {
     color: '#fff',
     fontSize: 16,
@@ -440,6 +462,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
+  },
+  deadlineItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  deadlineTextContainer: {
+    flex: 1,
+  },
+  priorityIndicator: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  priorityHigh: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+  },
+  priorityMedium: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+  },
+  priorityLow: {
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+  },
+  priorityText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   deadlineType: {
     color: '#3b82f6',

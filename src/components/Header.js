@@ -49,7 +49,7 @@ export default function Header({ title, onMenuPress, navigation }) {
         style={styles.menuButton}
         accessibilityLabel="Open menu"
       >
-        <Ionicons name="menu-outline" size={24} color="white" />
+        <Ionicons name="menu-outline" size={30} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -68,22 +68,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#334155',
   },
   logoContainer: {
-    width: 56,
-    height: 56,
-    backgroundColor: '#dbeafe',
-    borderRadius: 28,
+    width: 112,
+    height: 112,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 44,
-    height: 44,
+    width: 88,
+    height: 88,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#f97316',
-    textShadow: '0 2px 4px rgba(249, 115, 22, 0.3)',
+    color: '#fff',
   },
   menuButton: {
     padding: 8,

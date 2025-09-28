@@ -168,13 +168,6 @@ export default function SidebarMenu({
           {/* Footer with Theme Toggle and Sign Out side by side */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.themeButton, isDark ? styles.themeButtonDark : styles.themeButtonLight]}
-              onPress={handleThemeToggle}
-            >
-              <Ionicons name={isDark ? "moon-outline" : "sunny-outline"} size={20} color={isDark ? "#64748b" : "#9ca3af"} />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
               style={[styles.signOutButton, isDark ? styles.signOutButtonDark : styles.signOutButtonLight]}
               onPress={handleSignOut}
             >
@@ -214,18 +207,15 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoContainer: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 220,
+    height: 220,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f172a',
     marginBottom: 18,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 160,
+    height: 160,
   },
   appName: {
     fontSize: 24,
@@ -271,11 +261,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 30,
     paddingBottom: 40, // Extra padding to avoid Android navigation
     gap: 12,
-    alignItems: 'center',
   },
   themeButton: {
     width: 44,

@@ -379,7 +379,7 @@ export default function ProjectsScreen({ navigation, route, user, openSidebar })
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke="#3b82f6"
+            stroke="#10b981"
             strokeWidth="3"
             fill="transparent"
             strokeDasharray={circumference}
