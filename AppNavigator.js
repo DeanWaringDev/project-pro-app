@@ -28,6 +28,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import AuthScreen from './src/screens/AuthScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
+import AnalyticsScreen from './src/screens/AnalyticsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
@@ -176,6 +177,14 @@ export default function AppNavigator() {
               <Stack.Screen name="Calendar">
                 {props => (
                   <CalendarScreen
+                    {...props}
+                    openSidebar={() => setShowSidebar(true)}
+                  />
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Analytics">
+                {props => (
+                  <AnalyticsScreen
                     {...props}
                     openSidebar={() => setShowSidebar(true)}
                   />

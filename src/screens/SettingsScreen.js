@@ -30,14 +30,50 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Header from '../components/Header';
 
 const SettingsScreen = ({ navigation, openSidebar }) => {
   return (
     <View style={styles.container}>
       <Header title="Settings" onMenuPress={openSidebar} navigation={navigation} />
-      <Text style={styles.text}>This is the Settings screen. Add your settings options here.</Text>
+      <Text style={styles.text}>Settings</Text>
+      
+      <View style={styles.settingsSection}>
+        <Text style={styles.sectionTitle}>Account</Text>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Profile Settings</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Change Password</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.settingsSection}>
+        <Text style={styles.sectionTitle}>Preferences</Text>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Notifications</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Language</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.settingsSection}>
+        <Text style={styles.sectionTitle}>Support</Text>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Help & FAQ</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingItem}>
+          <Text style={styles.settingText}>Contact Support</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -82,10 +118,45 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   text: {
-    fontSize: 16,
-    color: '#cbd5e1',
+    fontSize: 24,
+    color: '#ffffff',
+    fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 24,
+    marginBottom: 32,
+  },
+  settingsSection: {
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    color: '#f97316',
+    fontWeight: '600',
+    marginBottom: 16,
+    paddingLeft: 4,
+  },
+  settingItem: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  settingText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    fontWeight: '500',
+  },
+  settingArrow: {
+    fontSize: 20,
+    color: '#64748b',
+    fontWeight: 'bold',
   },
 });
 

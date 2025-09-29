@@ -43,7 +43,9 @@ export default function Header({ title, onMenuPress, navigation }) {
           resizeMode="contain"
         />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>{title}</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.headerTitle}>{title}</Text>
+      </View>
       <TouchableOpacity
         onPress={onMenuPress}
         style={styles.menuButton}
@@ -60,22 +62,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingTop: 50,
+    paddingBottom: 15,
     paddingHorizontal: 20,
     backgroundColor: '#1e293b',
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
   },
   logoContainer: {
-    width: 112,
-    height: 112,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 88,
-    height: 88,
+    width: 50,
+    height: 50,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 20,

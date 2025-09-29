@@ -1,4 +1,21 @@
-/**
+  /**
+   * Get priority color based on priority level (matching ProjectsScreen)
+   */
+  const getPriorityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case "urgent":
+      case "high":
+        return "#ef4444";
+      case "medium":
+        return "#f59e0b";
+      case "low":
+        return "#10b981";
+      default:
+        return "#64748b";
+    }
+  };
+
+  /**
  * CalendarScreen.js - Calendar View with Project and Task Deadlines
  *
  * This screen displays a calendar with the following features:
@@ -333,12 +350,16 @@ export default function CalendarScreen({ navigation, openSidebar, onDeadlinePres
                         <Text style={styles.deadlineSubtitle}>{subText}</Text>
                       </View>
                       {item.priority && (
-                        <View style={[styles.priorityIndicator, 
-                          item.priority === 'High' && styles.priorityHigh,
-                          item.priority === 'Medium' && styles.priorityMedium,
-                          item.priority === 'Low' && styles.priorityLow
+                        <View style={[
+                          styles.priorityIndicator,
+                          { backgroundColor: `${getPriorityColor(item.priority)}20` }
                         ]}>
-                          <Text style={styles.priorityText}>{item.priority}</Text>
+                          <Text style={[
+                            styles.priorityText,
+                            { color: getPriorityColor(item.priority) }
+                          ]}>
+                            {item.priority.toUpperCase()}
+                          </Text>
                         </View>
                       )}
                     </View>
@@ -473,24 +494,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   priorityIndicator: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     marginLeft: 8,
   },
-  priorityHigh: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-  },
-  priorityMedium: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-  },
-  priorityLow: {
-    backgroundColor: 'rgba(34, 197, 94, 0.2)',
-  },
   priorityText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
-    color: '#fff',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   deadlineType: {
     color: '#3b82f6',

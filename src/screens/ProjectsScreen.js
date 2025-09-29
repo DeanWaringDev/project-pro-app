@@ -371,7 +371,7 @@ export default function ProjectsScreen({ navigation, route, user, openSidebar })
             cy={size / 2}
             r={radius}
             stroke="#334155"
-            strokeWidth="3"
+            strokeWidth="5"
             fill="transparent"
           />
           {/* Progress circle */}
@@ -380,7 +380,7 @@ export default function ProjectsScreen({ navigation, route, user, openSidebar })
             cy={size / 2}
             r={radius}
             stroke="#10b981"
-            strokeWidth="3"
+            strokeWidth="5"
             fill="transparent"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}

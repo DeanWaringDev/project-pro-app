@@ -59,7 +59,7 @@ export default function AuthScreen() {
         if (Platform.OS !== 'web') {
           // Configure Google Sign-In for mobile
           await GoogleSignin.configure({
-            webClientId: '1006772650440-vhln13aror5fcph3sj2b66kllrjj90e2.apps.googleusercontent.com', // Android client for EAS build certificate
+            webClientId: '1006772650440-kreg1u5jppnllu8e0ae37blpnn5iihfu.apps.googleusercontent.com', // Web client for local debug builds
           });
         } else {
           // Handle redirect result for web
@@ -186,6 +186,7 @@ export default function AuthScreen() {
    */
   const handleGoogleSignIn = async () => {
     console.log('Attempting Google Sign-In...');
+    console.log('Platform:', Platform.OS);
     setIsLoading(true);
 
     try {
@@ -210,14 +211,31 @@ export default function AuthScreen() {
         }
       } else {
         // Mobile platform - use react-native-google-signin
+        console.log('Checking Google Play Services...');
         await GoogleSignin.hasPlayServices();
+        console.log('Google Play Services available');
 
-  const userInfo = await GoogleSignin.signIn();
-  const { idToken, accessToken } = userInfo;
-  // Get the Google credential using both idToken and accessToken
-  const googleCredential = GoogleAuthProvider.credential(idToken, accessToken);
-  // Sign in with Firebase using the credential
-  const result = await signInWithCredential(auth, googleCredential);
+        console.log('Initiating Google Sign-In...');
+        const userInfo = await GoogleSignin.signIn();
+        console.log('Google Sign-In userInfo:', userInfo);
+        console.log('Google Sign-In userInfo.data:', userInfo.data);
+        
+        // Extract tokens from the correct location - explicitly from userInfo.data
+        const idToken = userInfo.data?.idToken || userInfo.idToken;
+        const accessToken = userInfo.data?.accessToken || userInfo.accessToken;
+        console.log('Got tokens - idToken length:', idToken?.length, 'accessToken length:', accessToken?.length);
+        
+        if (!idToken) {
+          throw new Error('No ID token received from Google Sign-In');
+        }
+        
+        // Get the Google credential using both idToken and accessToken
+        const googleCredential = GoogleAuthProvider.credential(idToken, accessToken);
+        console.log('Created Google credential');
+        
+        // Sign in with Firebase using the credential
+        const result = await signInWithCredential(auth, googleCredential);
+        console.log('Firebase signInWithCredential result:', result?.user?.email);
 
         if (result?.user) {
           console.log('Google Sign-In successful:', result.user.email);
@@ -245,6 +263,9 @@ export default function AuthScreen() {
           return;
         case 'auth/network-request-failed':
           errorMessage = 'Network error. Please check your internet connection.';
+          break;
+        case 'DEVELOPER_ERROR':
+          errorMessage = 'Google Sign-In configuration error. Please check:\n1. Package name matches Google Console\n2. Certificate fingerprint is correct\n3. Web Client ID is valid';
           break;
         case 'PLAY_SERVICES_NOT_AVAILABLE':
           errorMessage = 'Google Play Services not available. Please update Google Play Services.';

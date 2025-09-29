@@ -26,15 +26,78 @@
  * @param {Function} openSidebar - Function to open the sidebar menu
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { auth } from '../config/firebase';
 import Header from '../components/Header';
 
 const ProfileScreen = ({ navigation, openSidebar }) => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, []);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Header title="Profile" onMenuPress={openSidebar} navigation={navigation} />
-      <Text style={styles.text}>This is the Profile screen. Add your profile details here.</Text>
+      
+      <View style={styles.profileSection}>
+        <View style={styles.avatarContainer}>
+          <Image 
+            source={user?.photoURL ? { uri: user.photoURL } : require('../../assets/logo.png')}
+            style={styles.avatar}
+          />
+        </View>
+        
+        <Text style={styles.displayName}>{user?.displayName || 'User'}</Text>
+        <Text style={styles.email}>{user?.email}</Text>
+      </View>
+
+      <View style={styles.infoSection}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Member Since:</Text>
+          <Text style={styles.infoValue}>{formatDate(user?.metadata?.creationTime)}</Text>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Last Sign In:</Text>
+          <Text style={styles.infoValue}>{formatDate(user?.metadata?.lastSignInTime)}</Text>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Email Verified:</Text>
+          <Text style={[styles.infoValue, user?.emailVerified ? styles.verified : styles.unverified]}>
+            {user?.emailVerified ? 'Yes' : 'No'}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.actionsSection}>
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Edit Profile</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Change Password</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Privacy Settings</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -83,6 +146,90 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     textAlign: 'center',
     marginTop: 24,
+  },
+  profileSection: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+  },
+  avatarContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#1e293b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: '#f97316',
+  },
+  avatar: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+  },
+  displayName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  email: {
+    fontSize: 16,
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  infoSection: {
+    paddingHorizontal: 20,
+    marginBottom: 32,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#1e293b',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#cbd5e1',
+    fontWeight: '400',
+    flex: 1,
+    textAlign: 'right',
+  },
+  verified: {
+    color: '#10b981',
+  },
+  unverified: {
+    color: '#f59e0b',
+  },
+  actionsSection: {
+    paddingHorizontal: 20,
+  },
+  actionButton: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    fontSize: 16,
+    color: '#f97316',
+    fontWeight: '600',
   },
 });
 

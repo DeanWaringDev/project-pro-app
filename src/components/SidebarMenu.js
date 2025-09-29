@@ -150,6 +150,14 @@ export default function SidebarMenu({
             
             <TouchableOpacity
               style={[styles.navItem, isDark ? styles.navItemDark : styles.navItemLight]}
+              onPress={() => handleNavigation('Analytics')}
+            >
+              <Ionicons name="analytics-outline" size={24} color={isDark ? "#06b6d4" : "#0891b2"} />
+              <Text style={[styles.navText, isDark ? styles.textDark : styles.textLight]}>Analytics</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.navItem, isDark ? styles.navItemDark : styles.navItemLight]}
               onPress={() => handleNavigation('profile')}
             >
               <Ionicons name="person-outline" size={24} color={isDark ? "#f59e0b" : "#d97706"} />
@@ -203,19 +211,19 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 48,
-    marginBottom: 32,
+    marginTop: 30,
+    marginBottom: 20,
   },
   logoContainer: {
-    width: 220,
-    height: 220,
+    width: 140,
+    height: 140,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: 12,
   },
   logo: {
-    width: 160,
-    height: 160,
+    width: 100,
+    height: 100,
   },
   appName: {
     fontSize: 24,
@@ -231,7 +239,7 @@ const styles = StyleSheet.create({
   },
   navigation: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 5,
     paddingHorizontal: 20,
   },
   navItem: {
