@@ -18,6 +18,13 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# APK files
+*.apk
+
+# Android build outputs
+android/app/build/outputs/
+android/build/
+
 # Firebase & Google Services Config Files (contain sensitive API keys)
 google-services.json
 google-services.json.backup
